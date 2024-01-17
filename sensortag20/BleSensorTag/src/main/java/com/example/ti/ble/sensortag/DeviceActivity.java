@@ -238,6 +238,9 @@ import com.example.ti.util.PreferenceWR;
 		case R.id.opt_about:
 			openAboutDialog();
 			break;
+            case R.id.opt_fwupdate:
+                startUpdateFirmwareActivity();
+                break;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -350,6 +353,16 @@ import com.example.ti.util.PreferenceWR;
 		i.putExtra(EXTRA_DEVICE, mBluetoothDevice);
 		startActivityForResult(i, PREF_ACT_REQ);
 	}
+
+    private void startUpdateFirmwareActivity() {
+        // Launch preferences
+        final Intent i = new Intent(this, FwUpdateActivity.class);
+        i.putExtra(PreferencesActivity.EXTRA_SHOW_FRAGMENT,
+                PreferencesFragment.class.getName());
+        i.putExtra(PreferencesActivity.EXTRA_NO_HEADERS, true);
+        i.putExtra(EXTRA_DEVICE, mBluetoothDevice);
+        startActivityForResult(i, FWUPDATE_ACT_REQ);
+    }
 
 	private void discoverServices() {
 		if (mBtGatt.discoverServices()) {

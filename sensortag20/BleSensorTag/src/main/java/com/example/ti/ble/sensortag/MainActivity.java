@@ -278,6 +278,7 @@ public class MainActivity extends ViewPagerActivity {
 			// Broadcast receiver
             mBluetoothLeService = BluetoothLeService.getInstance();
             mBluetoothManager = mBluetoothLeService.getBtManager();
+
             mBtAdapter = mBluetoothManager.getAdapter();
 			if (mBtAdapter == null) {
 				Toast.makeText(this, R.string.bt_not_supported, Toast.LENGTH_LONG).show();

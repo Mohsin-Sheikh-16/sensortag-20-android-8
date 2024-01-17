@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.ti.ble.sensortag"
     android:versionCode="6"
-    android:versionName="2.3.[Fixed for Stephanie :-)]" >
+    android:versionName="2.3.[Fixed for Stephanie :-)]">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -11,6 +12,17 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     
     <uses-sdk
         android:minSdkVersion="18"
@@ -28,12 +40,15 @@
         android:name="com.example.ti.ble.sensortag.SensorTagApplicationClass" >
         <service
             android:name="com.example.ti.ble.common.BluetoothLeService"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="false"/>
         <service android:name="org.eclipse.paho.android.service.MqttService"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="false"/>
 
         <activity
             android:name="com.example.ti.ble.sensortag.MainActivity"
+            android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="unspecified" android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>

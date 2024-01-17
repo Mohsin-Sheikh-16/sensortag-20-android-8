@@ -58,6 +58,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -71,9 +75,11 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.example.ti.ble.sensortag.MainActivity;
 import com.example.ti.util.PreferenceWR;
 
 import java.util.concurrent.locks.Lock;
@@ -99,6 +105,9 @@ public class BluetoothLeService extends Service {
 	public final static String EXTRA_STATUS = "com.example.ti.ble.common.EXTRA_STATUS";
 	public final static String EXTRA_ADDRESS = "com.example.ti.ble.common.EXTRA_ADDRESS";
     public final static int GATT_TIMEOUT = 150;
+
+	 private final String BLUETOOTH_NOTIFICATION_CHANNEL = "bluetooth_channel";
+	private final String BLUETOOTH_NOTIFICATION_TITLE = "BLUETOOTH ORG Notification Channel";
 
 	// BLE
 	private BluetoothManager mBluetoothManager = null;
@@ -171,6 +180,7 @@ public class BluetoothLeService extends Service {
 			try {
 				switch (newState) {
 				case BluetoothProfile.STATE_CONNECTED:
+					gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
 					broadcastUpdate(ACTION_GATT_CONNECTED, address, status);
 					break;
 				case BluetoothProfile.STATE_DISCONNECTED:
@@ -370,6 +380,7 @@ public class BluetoothLeService extends Service {
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
         this.initialize();
+		onStartForeGroundService();
 		return START_STICKY;
 	}
 
@@ -523,14 +534,7 @@ public class BluetoothLeService extends Service {
 		return mBluetoothGatt.getServices();
 	}
 
-	/**
-	 * Enables or disables notification on a give characteristic.
-	 * 
-	 * @param characteristic
-	 *          Characteristic to act on.
-	 * @param enabled
-	 *          If true, enable notification. False otherwise.
-	 */
+
 	public int setCharacteristicNotification(
 	    BluetoothGattCharacteristic characteristic, boolean enable) {
         bleRequest req = new bleRequest();
@@ -628,7 +632,7 @@ public class BluetoothLeService extends Service {
 	 * callback.
 	 */
 	public void disconnect(String address) {
-		if (mBtAdapter == null) {
+		if (mBtAdapter == null && address == null) {
 			// Log.w(TAG, "disconnect: BluetoothAdapter not initialized");
 			return;
 		}
@@ -675,7 +679,10 @@ public class BluetoothLeService extends Service {
 		return mThis.mBluetoothGatt;
 	}
 
-	public static BluetoothManager getBtManager() {
+	public BluetoothManager getBtManager() {
+		if(mThis != null && mThis.mBluetoothManager == null){
+			mThis.mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+		}
 		return mThis.mBluetoothManager;
 	}
 
@@ -949,4 +956,47 @@ public class BluetoothLeService extends Service {
     public String getConnectedDeviceAddress() {
         return this.mBluetoothDeviceAddress;
     }
+
+	private void onStartForeGroundService() {
+		String title = "Bluetooth Service (NowZone)";
+		try{
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				Intent notificationIntent = new Intent(this, MainActivity.class);
+				PendingIntent pendingIntent = PendingIntent.getActivity(
+						this,
+						0,
+						notificationIntent,
+						PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+				);
+
+				Notification.Builder builder;
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					builder = new Notification.Builder(getApplicationContext(), BLUETOOTH_NOTIFICATION_CHANNEL);
+				} else {
+					builder = new Notification.Builder(getApplicationContext());
+				}
+
+				builder.setContentTitle(title)
+						.setContentIntent(pendingIntent);
+
+				builder.setContentText("Connected to NowZone Device");
+
+				Notification notification = builder.build();
+				NotificationChannel channel = new NotificationChannel(
+						BLUETOOTH_NOTIFICATION_CHANNEL,
+						BLUETOOTH_NOTIFICATION_TITLE,
+						NotificationManager.IMPORTANCE_HIGH
+				);
+				channel.setDescription("nowzone_org_channel_desc");
+				NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+				if (notificationManager != null) {
+					notificationManager.createNotificationChannel(channel);
+					startForeground(1072, notification);
+				}
+			}
+		} catch (Exception e){
+			Log.e("Mohsin", "Exception" + e.getMessage());
+		}
+
+	}
 }

@@ -62,6 +62,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.widget.Toast;
 
@@ -171,7 +172,11 @@ public class SensorTagApplicationClass extends Application{
         boolean f;
 
         Intent bindIntent = new Intent(this, BluetoothLeService.class);
-        startService(bindIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(bindIntent);
+        } else {
+            startService(bindIntent);
+        }
         f = bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
         if (!f) {
             CustomToast.middleBottom(this, "Bind to BluetoothLeService failed");

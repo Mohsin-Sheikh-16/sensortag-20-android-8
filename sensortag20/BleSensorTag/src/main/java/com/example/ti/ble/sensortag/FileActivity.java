@@ -53,13 +53,20 @@
 package com.example.ti.ble.sensortag;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -112,46 +119,179 @@ public class FileActivity extends Activity {
     mLwFileList = (ListView) findViewById(R.id.lw_file);
     mLwFileList.setOnItemClickListener(mFileClickListener);
 
-    // Characteristics list
-    mFileList = new ArrayList<String>();
+
+
+    // Display files found in path
+    //populateFileList();
+    listFilesInAssetsDirectory();
+  }
+
+  public void listFilesInAssetsDirectory() {
+    AssetManager assetManager = this.getAssets();
+
+    try {
+      // Get list of files in the assets directory
+      mFileList = new ArrayList<>();
+      String[] fileNames = assetManager.list("");
+      ArrayList<File> files = new ArrayList<>();
+
+      mFileAdapter = new FileAdapter(this, mFileList);
+      mLwFileList.setAdapter(mFileAdapter);
+
+      if (fileNames != null) {
+        for (String file : fileNames) {
+          // Do something with each file in the assets directory
+          System.out.println("File in assets: " + file);
+          File fileFromAsset = getFileFromAsset(this, file);
+          files.add(fileFromAsset);
+          mFileList.add(file);
+
+        }
+      }
+
+      if (mFileList.size() == 0)
+      {
+        Toast.makeText(this, "No OAD images available", Toast.LENGTH_LONG).show();
+      }
+
+
+      // Select the first item as default
+      if (mFileList.size() > 0)
+      {
+        mFileAdapter.setSelectedPosition(0);
+        mConfirm.setText("Confirm");
+      }
+      else
+      {
+        mConfirm.setText("Cancel");
+      }
+
+      // Display the list of files
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private File getFileFromAsset(Context context, String assetFileName) {
+    // Get the AssetManager
+    AssetManager assetManager = context.getAssets();
+
+    // Create a temporary file
+    File tempFile = null;
+    InputStream inputStream = null;
+    OutputStream outputStream = null;
+
+    try {
+      // Open the asset file
+      inputStream = assetManager.open(assetFileName);
+
+      // Create a temporary file in the app's cache directory
+      tempFile = File.createTempFile("temp", null, context.getCacheDir());
+
+      // Write the content of InputStream to the temporary file
+      outputStream = new FileOutputStream(tempFile);
+      byte[] buffer = new byte[1024];
+      int read;
+      while ((read = inputStream.read(buffer)) != -1) {
+        outputStream.write(buffer, 0, read);
+      }
+
+      // Close streams
+      outputStream.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        if (inputStream != null) {
+          inputStream.close();
+        }
+        if (outputStream != null) {
+          outputStream.close();
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return tempFile;
+  }
+
+
+  public void populateFileList()
+  {
+    // Create a list of files
+    mFileList = new ArrayList<>();
     mFileAdapter = new FileAdapter(this, mFileList);
     mLwFileList.setAdapter(mFileAdapter);
 
-    if (mDir.exists()) {
-    	mTwDirName.setText(mDir.getAbsolutePath());
-      FilenameFilter textFilter = new FilenameFilter() {
-    		public boolean accept(File dir, String name) {
-    			String lowercaseName = name.toLowerCase();
-    			if (lowercaseName.endsWith(".bin")) {
-    				return true;
-    			} else {
-    				return false;
-    			}
-    		}
-    	};
+    if (mDir.exists() && mDir.canRead()) {
+      FilenameFilter textFilter = new FilenameFilter()
+      {
+        public boolean accept(File dir, String name)
+        {
+          String lowercaseName = name.toLowerCase();
+          if (lowercaseName.endsWith(".bin"))
+          {
+            return true;
+          }
+          else
+          {
+            return false;
+          }
+        }
+      };
 
-      Log.i(TAG, mDir.getPath());
-      
-    	File[] files = mDir.listFiles(textFilter);
-  		for (File file : files) {
-  			if (!file.isDirectory()) {
-  				mFileList.add(file.getName());
-  			}
-  		}
-      
-  		if (mFileList.size() == 0)
-        Toast.makeText(this, "No OAD images available", Toast.LENGTH_LONG).show();      	
-    } else {
-      Toast.makeText(this, mDirectoryName + " does not exist", Toast.LENGTH_LONG).show();
+      // Create array of all .bin files
+      File[] files = mDir.listFiles(textFilter);
+      if (files == null) {
+        // Show error dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Error")
+                .setMessage("Could not access internal file storage.")
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                          public void onClick(DialogInterface dialog, int id) {
+                            finish();
+                          }
+                        })
+                .show();
+        return;
+      }
+
+      for (File file : files)
+      {
+        if (!file.isDirectory())
+        {
+          mFileList.add(file.getName());
+        }
+      }
+
+      if (mFileList.size() == 0)
+      {
+        Toast.makeText(this, "No OAD images available", Toast.LENGTH_LONG).show();
+      }
     }
-    
-    if (mFileList.size() > 0)
-    	mFileAdapter.setSelectedPosition(0);
     else
-    	mConfirm.setText("Cancel");
+    {
+      Toast.makeText(this, Environment.DIRECTORY_DOWNLOADS + " does not exist or is not readable", Toast.LENGTH_LONG).show();
+    }
+
+    // Select the first item as default
+    if (mFileList.size() > 0)
+    {
+      mFileAdapter.setSelectedPosition(0);
+      mConfirm.setText("Confirm");
+    }
+    else
+    {
+      mConfirm.setText("Cancel");
+    }
+
   }
-	
-	
+
+
   @Override
   public void onDestroy() {
     mFileList = null;
@@ -173,7 +313,8 @@ public class FileActivity extends Activity {
     Intent i = new Intent();
 
     if (mFileList.size() > 0) {
-    	i.putExtra(EXTRA_FILENAME, mDir.getAbsolutePath() + File.separator + mSelectedFile);
+    	//i.putExtra(EXTRA_FILENAME, mDir.getAbsolutePath() + File.separator + mSelectedFile);
+    	i.putExtra(EXTRA_FILENAME, mSelectedFile);
     	setResult(RESULT_OK, i);
     } else {
     	setResult(RESULT_CANCELED, i);    	

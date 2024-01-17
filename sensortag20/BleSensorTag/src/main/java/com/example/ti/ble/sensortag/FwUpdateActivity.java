@@ -102,8 +102,8 @@ public class FwUpdateActivity extends Activity {
 
   private static final int FILE_BUFFER_SIZE = 0x40000;
   public static final String FW_CUSTOM_DIRECTORY = Environment.DIRECTORY_DOWNLOADS;
-  private static final String FW_FILE_A = "SensorTagImgA.bin";
-  private static final String FW_FILE_B = "SensorTagImgB.bin";
+  private static final String FW_FILE_A = "NowZOneV1.0.6.bin";
+  private static final String FW_FILE_B = "NowZOneV1.0.5.bin";
 
   private static final int OAD_BLOCK_SIZE = 16;
   private static final int HAL_FLASH_WORD_SIZE = 4;
@@ -160,19 +160,20 @@ public class FwUpdateActivity extends Activity {
 
     // Service information
     mOadService = mDeviceActivity.getOadService();
-    mConnControlService = mDeviceActivity.getConnControlService();
+    //mConnControlService = mDeviceActivity.getConnControlService();
 
     // Characteristics list
     mCharListOad = mOadService.getCharacteristics();
-    mCharListCc = mConnControlService.getCharacteristics();
+    //mCharListCc = mConnControlService.getCharacteristics();
 
-    mServiceOk = mCharListOad.size() == 2 && mCharListCc.size() >= 3;
+    //mServiceOk = mCharListOad.size() == 2 && mCharListCc.size() >= 3;
+    mServiceOk = mCharListOad.size() == 2;
     if (mServiceOk) {
       mCharIdentify = mCharListOad.get(0);
       mCharBlock = mCharListOad.get(1);
       mCharBlock.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
       mLeService.setCharacteristicNotification(mCharBlock,true);
-      mCharConnReq = mCharListCc.get(1);
+      //mCharConnReq = mCharListCc.get(1);
     }
     mThis = this;
   }
@@ -256,7 +257,7 @@ public class FwUpdateActivity extends Activity {
       getTargetImageInfo();
       
   		// Connection interval is too low by default
-	  	setConnectionParameters();
+	  	//setConnectionParameters();
     } else {
       Toast.makeText(this, "OAD service initialisation failed", Toast.LENGTH_LONG).show();
     }
@@ -504,7 +505,7 @@ public class FwUpdateActivity extends Activity {
       // Make sure the request was successful
       if (resultCode == RESULT_OK) {
         String filename = data.getStringExtra(FileActivity.EXTRA_FILENAME);
-        loadFile(filename, false);
+        loadFile(filename, true);
       }
     }
   }
