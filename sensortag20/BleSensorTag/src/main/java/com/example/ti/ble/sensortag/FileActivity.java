@@ -140,12 +140,13 @@ public class FileActivity extends Activity {
 
       if (fileNames != null) {
         for (String file : fileNames) {
-          // Do something with each file in the assets directory
-          System.out.println("File in assets: " + file);
-          File fileFromAsset = getFileFromAsset(this, file);
-          files.add(fileFromAsset);
-          mFileList.add(file);
-
+          if(file.contains(".bin") && file.contains("Now")){
+            // Do something with each file in the assets directory
+            System.out.println("File in assets: " + file);
+            File fileFromAsset = getFileFromAsset(this, file);
+            files.add(fileFromAsset);
+            mFileList.add(file);
+          }
         }
       }
 
