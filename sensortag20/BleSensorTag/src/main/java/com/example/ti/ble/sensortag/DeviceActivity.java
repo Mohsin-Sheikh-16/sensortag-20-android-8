@@ -228,7 +228,7 @@ import com.example.ti.util.PreferenceWR;
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	@Override
+/*	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle presses on the action bar items
 		switch (item.getItemId()) {
@@ -245,7 +245,7 @@ import com.example.ti.util.PreferenceWR;
 			return super.onOptionsItemSelected(item);
 		}
 		return true;
-	}
+	}*/
 	public boolean isEnabledByPrefs(String prefName) {
 		String preferenceKeyString = "pref_"
 				+ prefName;

@@ -203,7 +203,7 @@ public class MainActivity extends ViewPagerActivity {
     }
 	}
 
-	@Override
+/*	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle presses on the action bar items
 		switch (item.getItemId()) {
@@ -233,7 +233,7 @@ public class MainActivity extends ViewPagerActivity {
 			return super.onOptionsItemSelected(item);
 		}
 		return true;
-	}
+	}*/
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
