@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -343,7 +344,7 @@ public class FwUpdateActivity extends Activity {
     buf[2] = Conversion.loUint16(mFileImgHdr.len);
     buf[3] = Conversion.hiUint16(mFileImgHdr.len);
     System.arraycopy(mFileImgHdr.uid, 0, buf, 4, 4);
-
+    Log.e("MOHASINOTA", Arrays.toString(buf));
     // Send image notification
     mCharIdentify.setValue(buf);
     mLeService.writeCharacteristic(mCharIdentify);
@@ -532,6 +533,7 @@ public class FwUpdateActivity extends Activity {
       // Send block
       mCharBlock.setValue(mOadBuffer);
       Log.d("FwUpdateActivity",String.format("TX Block %02x%02x",mOadBuffer[1],mOadBuffer[0]));
+      Log.e("MOHASINOTA",   mProgInfo.iBlocks + "/" + mProgInfo.nBlocks +"(" + mProgInfo.iBytes + ")  => "+ Arrays.toString(mOadBuffer));
       boolean success = mLeService.writeCharacteristicNonBlock(mCharBlock);
 
       if (success) {
